@@ -1,0 +1,300 @@
+<?php
+/* 
+Purpose : To add the hardware details.
+Created : Gayathri, Nikitasa
+Date : 02-06-2016
+*/
+error_reporting(0);
+include 'configs/smartyconfig.php';
+// create object
+// Connecting Database
+include('classes/class.mysql.php');
+$mysql->connect_database();
+
+// Validating fields
+include('classes/class.function.php');
+//include menu_count file
+include 'include/menu_count.php';
+
+if(isset($_POST['submit']) && ($_POST['submit'] != '')){
+	// brand name contains only letters, numbers and whitespace
+	$name = $_POST['brand'];
+	if($fun->name_validation($name) == true){
+		$brandE = 'Only letters, numbers and white space allowed'; 
+		$test = 'error';		
+		}
+	// modelid name contains only letters, numbers and whitespace
+	$name = $_POST['modelid'];
+	if($fun->name_validation($name) == true){
+		$modelidE = 'Only letters, numbers and white space allowed'; 
+		$test = 'error';		
+		}
+	// color contains only letters
+	$string = $_POST['color'];
+	if($fun->string_validation($string) == true){
+		$colorE = 'Only letters allowed'; 
+		$test = 'error';		
+		}
+	// modelid name contains only letters, numbers and whitespace
+	$name = $_POST['inventory_no'];
+	if($fun->name_validation($name) == true){
+		$inventory_noE = 'Only letters, numbers and white space allowed'; 
+		$test = 'error';		
+		}
+	// asset description name contains only letters, numbers
+	$input = $_POST['asset_description'];
+	if($fun->cap_num_validation($input) == true){
+		$asset_descriptionE = 'Only letters, numbers allowed'; 
+		$test = 'error';		
+		}
+	// location contains only letters
+	$string = $_POST['location'];
+	if($fun->string_validation($string) == true){
+		$locationE = 'Only letters allowed'; 
+		$test = 'error';		
+		}
+	// check if amount only contains numbers
+   $amount = $_POST['amount'];
+	if($fun->isnumeric($amount) == true){                 
+		$amountErr = 'Please enter correct amount'; 
+		$test = 'error';
+   	}
+   // check if amount only contains numbers
+   $number = $_POST['amount'];
+	if($fun->is_zero($number) == true){                 
+		$amountErr = 'Please enter correct amount'; 
+		$test = 'error';
+   	}
+   // company name contains only letters
+	$string = $_POST['company_name'];
+	if($fun->string_validation($string) == true){
+		$company_nameE = 'Only letters allowed'; 
+		$test = 'error';		
+		}
+	// contact person contains only letters
+	$string = $_POST['contact_person'];
+	if($fun->string_validation($string) == true){
+		$contact_personE = 'Only letters allowed'; 
+		$test = 'error';		
+		}
+   // check if contact no contains numbers
+   $amount = $_POST['contact_no'];
+	if($fun->isnumeric($amount) == true){                 
+		$contact_noE = 'Please enter correct amount'; 
+		$test = 'error';
+   	}
+   // check size of phone number is 10
+   $contact_no = $_POST['contact_no'];
+	if($fun->size_of_phonenumber($contact_no) == true){           
+		$contact_noErr = 'Please enter correct size'; 
+		$test = 'error';
+   	}
+   // city contains only letters
+	$string = $_POST['city'];
+	if($fun->string_validation($string) == true){
+		$cityE = 'Only letters allowed'; 
+		$test = 'error';		
+		}
+	// Validating the required fields  
+   $field = array('type' => 'typeErr', 'brand' => 'brandErr', 'modelid' => 'modelidErr', 'color' => 'colorErr', 
+   'description' => 'descriptionErr','inventory_no' => 'inventory_noErr', 'asset_description' => 'asset_descriptionErr', 
+   'location' => 'locationErr' ,'amount' => 'amountErr', 'date' => 'paid_dateErr', 'month' => 'paid_dateErr', 'year' => 'paid_dateErr',
+   'paid_mode' => 'paid_modeErr' ,'company_name' => 'company_nameErr', 'contact_person' => 'contact_personErr',
+   'contact_no' => 'contact_noErr', 'address' => 'addressErr', 'city' => 'cityErr');
+	foreach ($field as $field => $er_var){ 
+		if(empty ($_POST[$field])){
+			$er[$er_var] = ucfirst($field).' is required';
+			$test = 'error';
+			}else{
+			$form[$field] = test_input($_POST[$field]);	
+			}
+
+	$serial_no = $_POST['serial_no'];
+	$cost_center = $_POST['cost_center'];
+	$fieldvar = array('brand', 'modelid', 'color', 'description', 'inventory_no', 'asset_description', 
+	'location', 'amount', 'company_name', 'contact_person', 'contact_no', 'address', 'city');
+	foreach ($fieldvar as $fields){
+		$smarty->assign($fields,$form[$fields]);
+		}
+	$errvar = array('typeErr', 'brandErr', 'modelidErr', 'colorErr', 'descriptionErr', 'inventory_noErr', 
+	'asset_descriptionErr', 'locationErr', 'amountErr', 'paid_dateErr', 'paid_modeErr', 'company_nameErr', 
+	'contact_personErr', 'contact_noErr', 'addressErr', 'cityErr');
+	foreach ($errvar as $err){
+		$smarty->assign($err,$er[$err]);
+		}
+	$validvar = array('serial_no', 'cost_center','brandE','modelidE','colorE','inventory_noE','asset_descriptionE',
+	'locationE','amountErr','company_nameE','contact_personE','contact_noErr','contact_noE','cityE');
+	foreach ($validvar as $val){
+		$smarty->assign($val,$$val);
+		}
+	}
+
+// bill and warranty upload and validation
+if(isset($_POST['submit'])){  
+	// upload directory
+	$uploaddir = 'uploads/'; 
+	$uploadbill = $uploaddir . basename($_FILES['attach_bill']['name']); 
+	$billfile = $_FILES['attach_bill']['name'];
+	$billsize = $_FILES['attach_bill']['size'];
+	$billtype = $_FILES['attach_bill']['type'];
+	// for warranty
+	$uploadwar = $uploaddir . basename($_FILES['attach_warranty']['name']); 
+	$warfile = $_FILES['attach_warranty']['name'];
+	$warsize = $_FILES['attach_warranty']['size'];
+	$wartype = $_FILES['attach_warranty']['type'];
+	// retaining the upload file name
+	$filename = $billfile;
+	if($fun->upload_validation($filename) == true){
+		$billuploadErr = 'Not uploaded the bill file';
+		$test = 'error';
+		}else{
+		// file extensions
+		$extensions = array('jpeg','jpg','png','gif','pdf'); 
+		$bill_ext = explode('/',$billtype)	;
+		$bill_ext = end($bill_ext); 
+		// checking the file extension is jpg,jpeg,pdf or png
+		$file_ext = $bill_ext;
+		if($fun->extension_validation($file_ext,$extensions) == true){		
+			$billuploadErr = 'extension must be jpg,jpeg,png,gif,pdf';
+			$test = 'error';
+			}
+		// checking the file size is less than 50kb
+		$size = $billsize;
+		if($fun->size_validation($size)){
+			$billuploadErr = 'File size must be less tham 50 KB';
+			$test = 'error';
+			}	
+		// checking whether the upload directory is there or not.
+		$attach_file = 'attach_bill';
+		$uploadfile = $uploadbill;
+		if($fun->check_uploaded($attach_file,$uploadfile)){
+			$billuploadErr = 'Not uploaded the image';
+			$test = 'error';
+			}
+		// uploading file if there is no error
+		else{
+			move_uploaded_file($_FILES['attach_bill']['tmp_name'], $uploadbill);
+			}
+		} 
+	// retaining the warranty file name
+	$filename = $warfile;
+	if($fun->upload_validation($filename) == true){
+		$waruploadErr = 'Not uploaded the warranty file';
+		$test = 'error';
+		}else{
+		// file extensions
+		$extensions = array('jpeg','jpg','png','gif','pdf'); 
+		$war_ext = explode('/',$wartype)	;
+		$war_ext = end($war_ext); 
+		// checking the file extension is jpg,jpeg,pdf or png
+		$file_ext = $war_ext;
+		if($fun->extension_validation($file_ext,$extensions) == true){	
+			$waruploadErr = 'extension must be jpg,jpeg,png,gif,pdf';
+			$test = 'error';
+			}
+		// checking the file size is less than 50kb
+		$size = $warsize;
+		if($fun->size_validation($size)){
+			$waruploadErr = 'File size must be less tham 50 KB';
+			$test = 'error';
+			}	
+		// checking whether the upload directory is there or not.
+		$attach_file = 'attach_warranty';
+		$uploadfile = $uploadwar;
+		if($fun->check_uploaded($attach_file,$uploadfile)){
+			$waruploadErr = 'Not uploaded the image';
+			$test = 'error';
+			}
+		// uploading file if there is no error
+		else{
+			move_uploaded_file($_FILES['attach_warranty']['tmp_name'], $uploadwar);
+			}
+		}
+	} 
+	
+$smarty->assign('billfile',$billfile);
+$smarty->assign('warfile',$warfile);
+$smarty->assign('billuploadErr',$billuploadErr);
+$smarty->assign('waruploadErr',$waruploadErr);
+
+// checking there is no empty fields before submit
+if(empty($test)){
+	// Assigning the date
+	$date = date('Y-m-d h:i:s');
+	// mysql real escape string
+	$inputs = array($form['type'], $form['brand'], $form['modelid'], $form['color'], $serial_no, $form['description'], 
+	$form['inventory_no'], $form['asset_description'], $cost_center, $form['location'], $form['amount'], 
+	$form['year'].'-'.$form['month'].'-'.$form['date'], $form['paid_mode'], $billfile, $warfile, $form['company_name'],
+	$form['contact_person'], $form['contact_no'], $form['address'], $form['city'], $date);
+	foreach ($inputs as $inputvars){
+		$str = $inputvars;
+		$mysql->real_escape_str($str);
+		}
+	// Query to select the username and password from table. 
+	$query = "CALL add_hardware('".$form['type']."', '".$form['brand']."', '".$form['modelid']."', 
+	'".$form['color']."', '".$serial_no."', '".$form['description']."', '".$form['inventory_no']."', '".$form['asset_description']."',
+	'".$cost_center."', '".$form['location']."', '".$form['amount']."', '".$form['year'].'-'.$form['month'].'-'.$form['date']."', 
+	'".$form['paid_mode']."', '".$billfile."', '".$warfile."', '".$form['company_name']."', '".$form['contact_person']."', 
+	'".$form['contact_no']."', '".$form['address']."', '".$form['city']."','".$date."',5)";
+
+	// Calling the function that makes the insert
+	$res = $mysql->execute_query($query);
+	$row = $mysql->display_result($res);
+	$last_id = $row['last_id'];
+	}
+// redirecting to view page
+if(!empty($last_id)){
+echo "Record Inserted Successfully";
+}
+// closing mysql
+$mysql->close_connection();
+}
+// defining function filter the inputs 
+function test_input($data){
+   $data = trim($data);
+   $data = stripslashes($data);
+   $data = htmlspecialchars($data);
+   return $data;
+} 
+// smarty dropdown array for Hardware type
+$smarty->assign('myOptions', array(
+										  0 => 'Select option',
+                                1 => 'Mouse',
+                                2 => 'Keyboard',
+                                3 => 'Moniter',
+                                4 => 'CPU')
+                                );
+$smarty->assign('type',$form['type']);
+// smarty dropdown array for Paid Mode: 
+$smarty->assign('paidmode', array(
+										  0 => 'Select option',
+                                'Credite Card' => 'Credite Card',
+                                'Cheque' => 'Cheque')
+                                );
+$smarty->assign('paid_mode',$form['paid_mode']);
+// smarty dropdown array for Paid date
+$dates = array();
+array_push($dates,'DATE');
+for($d = 1; $d <= 31; $d++){
+	$dates[$d] = $d;
+	}
+$smarty->assign('dates', $dates);
+$smarty->assign('date',$form['date']);
+// defing month
+$smarty->assign('months', array(0 => 'MONTH', 1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April', 5 => 'May',
+ 6 => 'June', 7 => 'July', 8 => 'August', 9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December'));
+$smarty->assign('month',$form['month']);
+// year
+$years = array();
+array_push($years,'YEAR');
+for($i = 2010; $i <= 2030; $i++){
+	$years[$i] = $i;
+	}
+$smarty->assign('years',$years);
+$smarty->assign('year',$form['year']);
+// display
+$smarty->display('add_hardware.tpl');	
+?>
+
+
+
