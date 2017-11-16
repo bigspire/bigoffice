@@ -39,7 +39,7 @@ class CacheDispatcher extends DispatcherFilter {
  */
 	public function beforeDispatch(CakeEvent $event) {
 		if (Configure::read('Cache.check') !== true) {
-			return;
+			return null;
 		}
 
 		$path = $event->data['request']->here();
@@ -60,6 +60,7 @@ class CacheDispatcher extends DispatcherFilter {
 		if (file_exists($filename)) {
 			$controller = null;
 			$view = new View($controller);
+			$view->response = $event->data['response'];
 			$result = $view->renderCache($filename, microtime(true));
 			if ($result !== false) {
 				$event->stopPropagation();
